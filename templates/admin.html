@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .add-form { margin: 20px 0; padding: 20px; background: #f9f9f9; }
+    input, button { padding: 8px; margin: 5px; }
+    .delete-btn { background: red; color: white; }
+    .edit-btn { background: blue; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <a href="/">← Back to Search</a>
+
+  <div class="add-form">
+    <h2>Add New Result</h2>
+    <input type="text" id="title" placeholder="Title" />
+    <input type="text" id="snippet" placeholder="Snippet" />
+    <input type="text" id="journey" placeholder="Journey" />
+    <input type="text" id="modules" placeholder="Modules" />
+    <button onclick="addResult()">Add Result</button>
+  </div>
+
+  <h2>Existing Results</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Snippet</th>
+        <th>Journey</th>
+        <th>Modules</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="results-table">
+      {% for result in results %}
+      <tr>
+        <td>{{ result.id }}</td>
+        <td>{{ result.title }}</td>
+        <td>{{ result.snippet }}</td>
+        <td>{{ result.journey }}</td>
+        <td>{{ result.modules }}</td>
+        <td>
+          <button class="edit-btn" onclick="editResult({{ result.id }})">Edit</button>
+          <button class="delete-btn" onclick="deleteResult({{ result.id }})">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    async function addResult() {
+      const title = document.getElementById('title').value;
+      const snippet = document.getElementById('snippet').value;
+      const journey = document.getElementById('journey').value;
+      const modules = document.getElementById('modules').value;
+
+      const response = await fetch('/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, snippet, journey, modules })
+      });
+
+      if (response.ok) {
+        alert('Result added!');
+        location.reload();
+      }
+    }
+
+    async function deleteResult(id) {
+      if (!confirm('Are you sure?')) return;
+      const response = await fetch(`/delete/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        alert('Result deleted!');
+        location.reload();
+      }
+    }
+
+    async function editResult(id) {
+      const title = prompt('New Title', document.querySelector(`[data-id="${id}"] td:nth-child(2)`).innerText);
+      const snippet = prompt('New Snippet', document.querySelector(`[data-id="${id}"] td:nth-child(3)`).innerText);
+      const journey = prompt('New Journey', document.querySelector(`[data-id="${id}"] td:nth-child(4)`).innerText);
+      const modules = prompt('New Modules', document.querySelector(`[data-id="${id}"] td:nth-child(5)`).innerText);
+
+      if (!title || !snippet || !journey || !modules) return;
+
+      const response = await fetch(`/edit/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, snippet, journey, modules })
+      });
+
+      if (response.ok) {
+        alert('Result updated!');
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
