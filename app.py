@@ -61,7 +61,7 @@ def add():
         "title": data.get('title', ''),
         "snippet": data.get('snippet', ''),
         "category": data.get('category', ''),
-        "images": data.get('images', [])  # ← NEW: Accept images array
+        "images": data.get('images', [])
     }
     
     results.append(new_result)
@@ -81,7 +81,7 @@ def edit(result_id):
             result['title'] = data.get('title', result['title'])
             result['snippet'] = data.get('snippet', result['snippet'])
             result['category'] = data.get('category', result['category'])
-            result['images'] = data.get('images', result.get('images', []))  # ← NEW: Update images
+            result['images'] = data.get('images', result.get('images', []))
             save_results()
             return jsonify(result)
     
@@ -100,4 +100,5 @@ def delete(result_id):
         return jsonify({"error": "Result not found"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
