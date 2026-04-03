@@ -6,24 +6,17 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Use environment variable for data file location
-DATA_FILE = os.environ.get('DATA_FILE', 'results.json')
+DATA_FILE = 'results.json'
 
 def load_results():
     if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, 'r') as f:
-                return json.load(f)
-        except:
-            return []
+        with open(DATA_FILE, 'r') as f:
+            return json.load(f)
     return []
 
 def save_results():
-    try:
-        with open(DATA_FILE, 'w') as f:
-            json.dump(results, f, indent=2)
-    except Exception as e:
-        print(f"Error saving results: {e}")
+    with open(DATA_FILE, 'w') as f:
+        json.dump(results, f, indent=2)
 
 results = load_results()
 
@@ -48,7 +41,6 @@ def search():
 
 @app.route('/add', methods=['POST'])
 def add():
-    global results
     data = request.get_json()
     
     if not data or not data.get('category') or not data.get('title') or not data.get('snippet'):
@@ -61,7 +53,7 @@ def add():
         "title": data.get('title', ''),
         "snippet": data.get('snippet', ''),
         "category": data.get('category', ''),
-        "images": data.get('images', [])  # ← NEW: Accept images array
+        "image": data.get('image', None)
     }
     
     results.append(new_result)
@@ -70,7 +62,6 @@ def add():
 
 @app.route('/edit/<int:result_id>', methods=['PUT'])
 def edit(result_id):
-    global results
     data = request.get_json()
     
     if not data:
@@ -81,8 +72,8 @@ def edit(result_id):
             result['title'] = data.get('title', result['title'])
             result['snippet'] = data.get('snippet', result['snippet'])
             result['category'] = data.get('category', result['category'])
-            result['images'] = data.get('images', result.get('images', []))  # ← NEW: Update images
-            save_results()
+            if data.get('image'):
+                result['image'] = data.get('image')
             return jsonify(result)
     
     return jsonify({"error": "Result not found"}), 404
